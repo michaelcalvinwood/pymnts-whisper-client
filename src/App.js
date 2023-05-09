@@ -2,6 +2,13 @@ import logo from './logo.svg';
 import './App.css';
 
 function App() {
+  
+  setTimeout(() => {
+    if (!window.socketConnection) window.socketConnection = io(`https://node.pymnts.com:6400`);
+  }, 2000)
+
+  
+
   return (
     <div className="App">
       <header className="App-header">
