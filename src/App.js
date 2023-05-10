@@ -4,6 +4,7 @@ import './App.css';
 import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Spinner, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import InputSpeaker from './components/InputSpeaker';
+import { v4 as uuidv4 } from 'uuid';
 
 function App() {
   const [alertMessage, setAlertMessage] = useState('');
@@ -13,6 +14,7 @@ function App() {
   const [speakers, _setSpeakers] = useState([]);
   const [transcript, _setTranscript] = useState('');
   const [article, _setArticle] = useState();
+  const [focus, setFocus] = useState(0);
 
   console.log('App', speakers);
 
@@ -21,9 +23,12 @@ function App() {
   const setSpeakers = speakers => _setSpeakers(speakers);
   
   const updateSpeaker = (num, name) => {
-    let curSpeakers = speakers;
+    console.log('updateSpeaker', num, name);
+    let curSpeakers = [...speakers];
     curSpeakers[num] = name;
-    setSpeakers(curSpeakers);
+    console.log('curSpeakers', curSpeakers);
+    setFocus(num);
+    _setSpeakers(curSpeakers);
   }
 
   const message = (msg, status) => {
@@ -37,6 +42,10 @@ function App() {
     
     if (e.target.value) window.socketConnection.emit('url', e.target.value);
     else message('', 'success');
+  }
+
+  const solidifySpeakers = e => {
+    window.socketConnection.emit('speakers', speakers);
   }
 
   const turnOffSpinner = () => setShowSpinner(false);
@@ -86,16 +95,18 @@ function App() {
           <Text width='8rem' >Video&nbsp;URL:&nbsp; </Text>
           <Input value={url} onChange={handleUrl}/>
         </Box>
+      
         {speakers.map((speaker, index) => {
           return <InputSpeaker
-            key={speaker}
+            key={speaker + index}
             num={index}
             name={speaker}
             updateSpeaker={updateSpeaker}
+            focus={index === focus}
           />
         })
         }
-        {speakers.length && <Button display='block' margin='auto' width='fit-content' padding='.25rem .5rem'>Set Speakers</Button>}
+        {speakers.length !== 0 && <Button display='block' margin='auto' width='fit-content' padding='.25rem .5rem' onClick={solidifySpeakers}>Set Speakers</Button>}
       </Box>
       <Box>
         {transcript && <Heading size='sm'>{article ? "Article" : "Transcript"}</Heading> }
