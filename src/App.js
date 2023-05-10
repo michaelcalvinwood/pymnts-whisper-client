@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import { io } from 'socket.io-client';
 import './App.css';
-import { Alert, AlertIcon, Box, Container, Heading, Input, Spinner, Text } from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Spinner, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import InputSpeaker from './components/InputSpeaker';
 
@@ -11,13 +11,15 @@ function App() {
   const [showSpinner, setShowSpinner] = useState(false);
   const [url, setUrl] = useState('');
   const [speakers, _setSpeakers] = useState([]);
+  const [transcript, _setTranscript] = useState('');
+  const [article, _setArticle] = useState();
 
   console.log('App', speakers);
 
-  const setSpeakers = speakers => {
-    _setSpeakers(speakers);
-  }
-
+  const setTranscript = transcript => _setTranscript(transcript);
+  const setArticle = article => _setArticle(article);
+  const setSpeakers = speakers => _setSpeakers(speakers);
+  
   const updateSpeaker = (num, name) => {
     let curSpeakers = speakers;
     curSpeakers[num] = name;
@@ -43,11 +45,13 @@ function App() {
   if (!window.socketConnection) {
     window.socketConnection = io(`https://node.pymnts.com:6400`);
     
+    window.socketConnection.on('transcript', transcript => setTranscript(transcript.replaceAll("\n", "<br>")))
+
     window.socketConnection.on('speakers', (speakers) => {
       console.log('speakers', speakers);
-      setSpeakers(speakers);
-      
+      setSpeakers(speakers);    
     });
+
     window.socketConnection.on('done', (msg) => {
       turnOffSpinner();
       message('', 'success');
@@ -89,7 +93,13 @@ function App() {
             name={speaker}
             updateSpeaker={updateSpeaker}
           />
-        })}
+        })
+        }
+        {speakers.length && <Button display='block' margin='auto' width='fit-content' padding='.25rem .5rem'>Set Speakers</Button>}
+      </Box>
+      <Box>
+        {transcript && <Heading size='sm'>{article ? "Article" : "Transcript"}</Heading> }
+        {transcript && <Text textAlign="left" dangerouslySetInnerHTML={{__html: article ? article : transcript}}></Text> }
       </Box>
       </Container>
       {showSpinner && <Box height='100vh' width="100vw" position='fixed' top='0' left='0' display='flex' justifyContent={'center'} alignItems={'center'}>
