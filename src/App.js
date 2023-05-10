@@ -1,28 +1,72 @@
 import logo from './logo.svg';
 import { io } from 'socket.io-client';
 import './App.css';
-import { Alert, AlertIcon, Container, Heading } from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Container, Heading, Input, Spinner, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import InputSpeaker from './components/InputSpeaker';
 
 function App() {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertStatus, setAlertStatus] = useState('error');
+  const [showSpinner, setShowSpinner] = useState(false);
+  const [url, setUrl] = useState('');
+  const [speakers, _setSpeakers] = useState([]);
+
+  console.log('App', speakers);
+
+  const setSpeakers = speakers => {
+    _setSpeakers(speakers);
+  }
+
+  const updateSpeaker = (num, name) => {
+    let curSpeakers = speakers;
+    curSpeakers[num] = name;
+    setSpeakers(curSpeakers);
+  }
 
   const message = (msg, status) => {
     setAlertMessage(msg);
     setAlertStatus(status);
   }
 
+  const handleUrl = e => {
+
+    if (url !== e.target.value) setUrl(e.target.value);
+    
+    if (e.target.value) window.socketConnection.emit('url', e.target.value);
+    else message('', 'success');
+  }
+
+  const turnOffSpinner = () => setShowSpinner(false);
+  const turnOnSpinner = () => setShowSpinner(true);
+
   if (!window.socketConnection) {
     window.socketConnection = io(`https://node.pymnts.com:6400`);
     
-    window.socketConnection.on('message', (msg) => message(msg, 'success'));
-    window.socketConnection.on('error', (msg) => message(msg, 'error'));
+    window.socketConnection.on('speakers', (speakers) => {
+      console.log('speakers', speakers);
+      setSpeakers(speakers);
+      
+    });
+    window.socketConnection.on('done', (msg) => {
+      turnOffSpinner();
+      message('', 'success');
+    })
+
+    window.socketConnection.on('message', (msg) => {
+      message(msg, 'success');
+      turnOnSpinner();
+    });
+
+    window.socketConnection.on('error', (msg) => {
+      message(msg, 'error')
+      turnOffSpinner();
+    });
   }
 
 
   useEffect(() => {
-    window.socketConnection.emit('url', 'the url')
+    //window.socketConnection.emit('url', 'the url')
   }, []) 
 
   return (
@@ -33,7 +77,24 @@ function App() {
           <AlertIcon />
           {alertMessage}
       </Alert>
+      <Box margin='.5rem 0'>
+        <Box display='flex' alignItems={'center'}>
+          <Text width='8rem' >Video&nbsp;URL:&nbsp; </Text>
+          <Input value={url} onChange={handleUrl}/>
+        </Box>
+        {speakers.map((speaker, index) => {
+          return <InputSpeaker
+            key={speaker}
+            num={index}
+            name={speaker}
+            updateSpeaker={updateSpeaker}
+          />
+        })}
+      </Box>
       </Container>
+      {showSpinner && <Box height='100vh' width="100vw" position='fixed' top='0' left='0' display='flex' justifyContent={'center'} alignItems={'center'}>
+        <Spinner size='xl' color='navy'/>
+    </Box> }
     </div>
   );
 }
