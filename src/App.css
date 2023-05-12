@@ -36,3 +36,29 @@
     transform: rotate(360deg);
   }
 }
+
+#transcriptArticle h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin: .5rem 0;
+}
+
+#transcriptArticle p {
+  margin-bottom: .5rem;
+}
+
+#transcriptArticle blockquote {
+  margin-left: 2rem;
+}
+
+#transcriptArticle blockquote p {
+  font-style: italic;
+  margin-bottom: .25rem;
+}
+
+#transcriptArticle blockquote footer {
+  margin-top: .25rem;
+  font-weight: bold;
+  margin-bottom: .5rem;
+}

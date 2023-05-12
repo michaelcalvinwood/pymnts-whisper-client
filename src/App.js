@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import { io } from 'socket.io-client';
 import './App.css';
-import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Spinner, Text } from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Spinner, Text, Textarea } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import InputSpeaker from './components/InputSpeaker';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,13 +14,18 @@ function App() {
   const [speakers, _setSpeakers] = useState([]);
   const [transcript, _setTranscript] = useState('');
   const [article, _setArticle] = useState();
+  const [articleComplete, _setArticleComplete] = useState(false);
   const [focus, setFocus] = useState(0);
+  const [rawTranscript, _setRawTranscript] = useState('');
+  const [entities, setEntities] = useState('');
 
   console.log('App', speakers);
 
   const setTranscript = transcript => _setTranscript(transcript);
   const setArticle = article => _setArticle(article);
-  const setSpeakers = speakers => _setSpeakers(speakers);
+  const setSpeakers = speakers => _setSpeakers([...speakers]);
+  const setArticleComplete = status => _setArticleComplete(status);
+  const setRawTranscript = rt => _setRawTranscript(rt);
   
   const updateSpeaker = (num, name) => {
     console.log('updateSpeaker', num, name);
@@ -45,7 +50,7 @@ function App() {
   }
 
   const solidifySpeakers = e => {
-    window.socketConnection.emit('speakers', speakers);
+    window.socketConnection.emit('speakers', {rawTranscript, speakerList: speakers});
   }
 
   const turnOffSpinner = () => setShowSpinner(false);
@@ -54,14 +59,33 @@ function App() {
   if (!window.socketConnection) {
     window.socketConnection = io(`https://node.pymnts.com:6400`);
     
-    window.socketConnection.on('transcript', transcript => setTranscript(transcript.replaceAll("\n", "<br>")))
+    window.socketConnection.on('rawTranscript', rt => setRawTranscript(rt));
+
+    window.socketConnection.on('transcript', transcript => {
+      console.log('got transcript', transcript);
+      setTranscript(transcript.replaceAll("\n", '<br>'));
+    })
+
+    window.socketConnection.on('article', articlePart => {
+      console.log('got article part', articlePart);
+      let parts = articlePart.split("\n");
+      for (let i = 0; i < parts.length; ++i) if (parts[i]) parts[i] = `<p>${parts[i]}</p>`;
+      console.log(parts);
+      setArticle(article ? article + parts.join("\n") : parts.join("\n"));
+    });
 
     window.socketConnection.on('speakers', (speakers) => {
       console.log('speakers', speakers);
       setSpeakers(speakers);    
     });
 
+    window.socketConnection.on('gotSpeakers', (msg) => {
+      console.log('gotSpeakers');
+      setSpeakers([])
+    });
+
     window.socketConnection.on('done', (msg) => {
+      if (msg === 'articleComplete') setArticleComplete(true);
       turnOffSpinner();
       message('', 'success');
     })
@@ -106,11 +130,14 @@ function App() {
           />
         })
         }
+        {speakers.length && <Textarea value={entities} onChange={e => setEntities(e.target.value)} placeholder="List of names, products, etc. with unusual spelling.\nOne per line."  />}
         {speakers.length !== 0 && <Button display='block' margin='auto' width='fit-content' padding='.25rem .5rem' onClick={solidifySpeakers}>Set Speakers</Button>}
       </Box>
       <Box>
-        {transcript && <Heading size='sm'>{article ? "Article" : "Transcript"}</Heading> }
-        {transcript && <Text textAlign="left" dangerouslySetInnerHTML={{__html: article ? article : transcript}}></Text> }
+        <div id='transcriptArticle'>
+          {transcript && <Heading size='sm'>{article ? "Article" : "Transcript"}</Heading> }
+          {transcript && <Text textAlign="left" dangerouslySetInnerHTML={{__html: article ? article : transcript}}></Text> }
+        </div>
       </Box>
       </Container>
       {showSpinner && <Box height='100vh' width="100vw" position='fixed' top='0' left='0' display='flex' justifyContent={'center'} alignItems={'center'}>
