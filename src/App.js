@@ -130,7 +130,7 @@ function App() {
           />
         })
         }
-        {speakers.length && <Textarea value={entities} onChange={e => setEntities(e.target.value)} placeholder="List of names, products, etc. with unusual spelling.\nOne per line."  />}
+        {speakers.length !== 0 && <Textarea value={entities} onChange={e => setEntities(e.target.value)} placeholder={`List of names, products, etc. with unusual spelling.\nOne per line.`}  />}
         {speakers.length !== 0 && <Button display='block' margin='auto' width='fit-content' padding='.25rem .5rem' onClick={solidifySpeakers}>Set Speakers</Button>}
       </Box>
       <Box>
