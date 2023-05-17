@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react';
 import InputSpeaker from './components/InputSpeaker';
 import axios from 'axios';
 import Login from './components/Login';
-import env from 'react-dotenv'
-import { v4 as uuidv4 } from 'uuid';
+import * as wp from './utils/wordpress';
+
 
 function App() {
   const [alertMessage, setAlertMessage] = useState('');
@@ -24,8 +24,6 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
-  console.log('App', window.env, speakers);
 
   const setTranscript = transcript => _setTranscript(transcript);
   const setArticle = article => _setArticle(article);
@@ -129,6 +127,10 @@ function App() {
       message(msg, 'error')
       turnOffSpinner();
     });
+  }
+
+  if (isLoggedIn) {
+    wp.getTagId('delta.pymnts.com', username, password, 'PYMNTS');
   }
 
 

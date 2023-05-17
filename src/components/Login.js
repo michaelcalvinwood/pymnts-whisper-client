@@ -10,9 +10,9 @@ function Login({username, setUsername, password, setPassword, setIsLoggedIn}) {
     const [alertStatus, setAlertStatus] = useState('error');
 
     const handleSubmit = async e => {
-        const token = await wp.getJWT(username, password, 'delta.pymnts.com');
+        const token = await wp.getJWT('delta.pymnts.com', username, password);
         console.log('token', token);
-        
+
         if (token === false) return setAlertMessage('Invalid credentials.');
             
         setIsLoggedIn(true);
