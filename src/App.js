@@ -4,6 +4,7 @@ import './App.css';
 import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Spinner, Text, Textarea } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import InputSpeaker from './components/InputSpeaker';
+import env from 'react-dotenv'
 import { v4 as uuidv4 } from 'uuid';
 
 function App() {
@@ -19,7 +20,7 @@ function App() {
   const [rawTranscript, _setRawTranscript] = useState('');
   const [entities, setEntities] = useState('');
 
-  console.log('App', speakers);
+  console.log('App', window.env, speakers);
 
   const setTranscript = transcript => _setTranscript(transcript);
   const setArticle = article => _setArticle(article);
