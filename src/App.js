@@ -22,6 +22,8 @@ function App() {
   const [rawTranscript, _setRawTranscript] = useState('');
   const [entities, setEntities] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   console.log('App', window.env, speakers);
 
@@ -136,7 +138,13 @@ function App() {
   }, []) 
 
   if (!isLoggedIn) {
-    return <Login setIsLoggedIn={setIsLoggedIn}/>
+    return <Login 
+      username={username}
+      setUsername={setUsername}
+      password={password}
+      setPassword={setPassword}
+      setIsLoggedIn={setIsLoggedIn}
+    />
   }
 
   return (
