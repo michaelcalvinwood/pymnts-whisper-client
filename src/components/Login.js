@@ -38,7 +38,7 @@ function Login({username, setUsername, password, setPassword, setIsLoggedIn}) {
 
   return (
     <Container>
-        <Heading size='sm' textAlign='center'>Login</Heading>
+        <Heading textAlign='center'>PYMNTS Whisper</Heading>
         <Alert status={alertStatus} marginBottom={'0'} visibility={alertStatus && alertMessage ? 'visible' : 'hidden'}>
           <AlertIcon />
           {alertMessage}
