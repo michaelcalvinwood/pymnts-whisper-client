@@ -2,6 +2,7 @@ import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Text } from '
 import axios from 'axios';
 import { set } from 'lodash';
 import React, { useState } from 'react'
+import * as wp from '../utils/wordpress';
 
 function Login({username, setUsername, password, setPassword, setIsLoggedIn}) {
    
@@ -9,31 +10,12 @@ function Login({username, setUsername, password, setPassword, setIsLoggedIn}) {
     const [alertStatus, setAlertStatus] = useState('error');
 
     const handleSubmit = async e => {
-        let request = {
-            url: "https://delta.pymnts.com/wp-json/jwt-auth/v1/token",
-            method: "POST",
-            withCredentials: false,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': "*/*"
-            },
-            data: {
-                username,
-                password
-            }
-        }
-
-        let response;
-        try {
-            response = await axios(request);
-            setIsLoggedIn(true);
-        } catch (err) {
-            console.error(err);
-            setAlertMessage('Invalid credentials.')
-            return;
-        }
-
-        console.log(response.data);
+        const token = await wp.getJWT(username, password, 'delta.pymnts.com');
+        console.log('token', token);
+        
+        if (token === false) return setAlertMessage('Invalid credentials.');
+            
+        setIsLoggedIn(true);
     }
 
   return (
