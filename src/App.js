@@ -4,6 +4,8 @@ import './App.css';
 import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Spinner, Text, Textarea } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import InputSpeaker from './components/InputSpeaker';
+import axios from 'axios';
+import Login from './components/Login';
 import env from 'react-dotenv'
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,6 +21,7 @@ function App() {
   const [focus, setFocus] = useState(0);
   const [rawTranscript, _setRawTranscript] = useState('');
   const [entities, setEntities] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   console.log('App', window.env, speakers);
 
@@ -40,6 +43,30 @@ function App() {
   const message = (msg, status) => {
     setAlertMessage(msg);
     setAlertStatus(status);
+  }
+
+  const createWordPressPost = async (title, content, username, password, tags = [] ) => {
+    let request = {
+      url: "https://delta.pymnts.com/wp-json/jwt-auth/v1/token",
+      method: "POST",
+      withCredentials: false,
+      headers: {
+          'Content-Type': 'application/json',
+          'Accept': "*/*"
+      },
+      data: {
+          username, password
+      }
+    }
+
+    let response;
+    try {
+        response = await axios(request);
+    } catch (err) {
+        return console.error(err);
+    }
+
+    console.log(response.data);
   }
 
   const handleUrl = e => {
@@ -105,7 +132,12 @@ function App() {
 
   useEffect(() => {
     //window.socketConnection.emit('url', 'the url')
+    createWordPressPost('test post', 'test content', window.env.WORDPRESS_USERNAME, window.env.WORDPRESS_PASSWORD)
   }, []) 
+
+  if (!isLoggedIn) {
+    return <Login setIsLoggedIn={setIsLoggedIn}/>
+  }
 
   return (
     <div className="App">

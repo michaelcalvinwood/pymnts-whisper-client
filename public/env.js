@@ -1,3 +1,4 @@
 window.env = {
-  "TEST": "YOYO"
+  "WORDPRESS_USERNAME": "mwood",
+  "WORDPRESS_PASSWORD": "P%DqjXAtjjPTGJ^XwHRVbeql"
 };

@@ -44,7 +44,8 @@
   },
   "react-dotenv": {
     "whitelist": [
-      "TEST"
+      "WORDPRESS_USERNAME",
+      "WORDPRESS_PASSWORD"
     ]
   }
 }
