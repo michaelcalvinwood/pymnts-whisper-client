@@ -6,7 +6,6 @@ function InputSpeaker({num, name, updateSpeaker, focus}) {
   
   useEffect(() => {
     if (focus) {
-      console.log('is focused', num);
       inputRef.current.focus();
     }
   })

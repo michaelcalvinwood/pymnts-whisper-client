@@ -1,5 +1,4 @@
-import axios
- from "axios";
+import axios from "axios";
 export const getJWT = async (hostname, username, password) => {
     
         let request = {

@@ -16,7 +16,7 @@ function App() {
   const [url, setUrl] = useState('');
   const [speakers, _setSpeakers] = useState([]);
   const [transcript, _setTranscript] = useState('');
-  const [article, _setArticle] = useState();
+  const [article, _setArticle] = useState(null);
   const [articleComplete, _setArticleComplete] = useState(false);
   const [focus, setFocus] = useState(0);
   const [rawTranscript, _setRawTranscript] = useState('');
@@ -32,10 +32,10 @@ function App() {
   const setRawTranscript = rt => _setRawTranscript(rt);
   
   const updateSpeaker = (num, name) => {
-    console.log('updateSpeaker', num, name);
+    
     let curSpeakers = [...speakers];
     curSpeakers[num] = name;
-    console.log('curSpeakers', curSpeakers);
+    
     setFocus(num);
     _setSpeakers(curSpeakers);
   }
@@ -78,7 +78,11 @@ function App() {
   }
 
   const solidifySpeakers = e => {
-    window.socketConnection.emit('speakers', {rawTranscript, speakerList: speakers, entities});
+    window.socketConnection.emit('speakers', {rawTranscript: transcript, speakerList: speakers, entities});
+  }
+
+  const makePost = () => {
+    console.log('create Post');
   }
 
   const turnOffSpinner = () => setShowSpinner(false);
@@ -87,16 +91,19 @@ function App() {
   if (!window.socketConnection) {
     window.socketConnection = io(`https://node.pymnts.com:6400`);
     
-    window.socketConnection.on('rawTranscript', rt => setRawTranscript(rt));
+    window.socketConnection.on('rawTranscript', rt => setTranscript(rt));
 
-    window.socketConnection.on('transcript', transcript => {
+    window.socketConnection.on('finalTranscript', transcript => {
       console.log('got transcript', transcript);
-      setTranscript(transcript.replaceAll("\n", '<br>'));
+      message('Final draft of the article is being created. You can copyedit the transcript now while waiting.', 'success');
+      setTranscript(transcript);
     })
 
     window.socketConnection.on('article', article => {
-      console.log('article', article);
-      message('success', 'article received');
+      setArticle(article);
+      console.log('engaging artile', article.engagingArticle);
+      console.log('titleTags', article.titleTags);
+      message('article received', 'success');
 
       // console.log('got article part', articlePart);
       // let parts = articlePart.split("\n");
@@ -133,13 +140,8 @@ function App() {
   }
 
   if (isLoggedIn) {
-    wp.getTagId('delta.pymnts.com', username, password, 'PYMNTS Testomatic');
+    //wp.getTagId('delta.pymnts.com', username, password, 'PYMNTS Testomatic');
   }
-
-  useEffect(() => {
-    //window.socketConnection.emit('url', 'the url')
-    //createWordPressPost('test post', 'test content', window.env.WORDPRESS_USERNAME, window.env.WORDPRESS_PASSWORD)
-  }, []) 
 
   if (!isLoggedIn) {
     return <Login 
@@ -175,15 +177,22 @@ function App() {
           />
         })
         }
-        {speakers.length !== 0 && <Textarea value={entities} onChange={e => setEntities(e.target.value)} placeholder={`Information to assist AI copyediting such as where people work, unusual spellings, etc.`}  />}
-        {speakers.length !== 0 && <Button display='block' margin='auto' width='fit-content' padding='.25rem .5rem' onClick={solidifySpeakers}>Set Speakers</Button>}
+        {speakers.length !== 0 && <Textarea value={entities} 
+          onChange={e => { 
+            setEntities(e.target.value);
+            setFocus(-1);
+          }} 
+          placeholder={`Optionally provide information here to assist AI with copyediting (such as where people work, unusual spellings, etc.)`}  
+          />}
+        {speakers.length !== 0 && <Button display='block' margin='.5rem auto' width='fit-content' padding='.25rem .5rem' onClick={solidifySpeakers}>Set Speakers</Button>}
+        {article !== null && <Button display='block' margin='.5rem auto' width='fit-content' padding='.25rem .5rem' onClick={makePost}>Create Post</Button>}
       </Box>
       <Box>
         <div id='transcriptArticle'>
           {/* {transcript && <Heading size='sm'>{article ? "Article" : "Transcript"}</Heading> }
           {transcript && <Text textAlign="left" dangerouslySetInnerHTML={{__html: article ? article : transcript}}></Text> } */}
           {transcript && <Heading size='sm'>Transcript</Heading> }
-          {transcript && <Textarea textAlign="left" dangerouslySetInnerHTML={{__html: article ? article : transcript}}></Textarea> }
+          {transcript && <Textarea rows="25" textAlign="left" value={transcript} onChange={e => setTranscript(e.target.value)}/> }
         </div>
       </Box>
       </Container>

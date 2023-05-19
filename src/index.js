@@ -19,7 +19,7 @@ export const theme = extendTheme(
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <ChakraProvider theme={theme}>
-    <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+    <ColorModeScript />
     <App />
   </ChakraProvider>
 );
