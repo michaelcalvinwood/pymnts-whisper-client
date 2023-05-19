@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import { io } from 'socket.io-client';
 import './App.css';
-import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Spinner, Text, Textarea } from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Select, Spinner, Text, Textarea } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import InputSpeaker from './components/InputSpeaker';
 import axios from 'axios';
@@ -24,6 +24,10 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  const [titles, setTitles] = useState([]);
+  const [title, setTitle] = useState('');
+  const [titleIndex, setTitleIndex] = useState(0);
 
   const setTranscript = transcript => _setTranscript(transcript);
   const setArticle = article => _setArticle(article);
@@ -97,12 +101,18 @@ function App() {
       console.log('got transcript', transcript);
       message('Final draft of the article is being created. You can copyedit the transcript now while waiting.', 'success');
       setTranscript(transcript);
+      turnOffSpinner();
     })
 
     window.socketConnection.on('article', article => {
       setArticle(article);
       console.log('engaging artile', article.engagingArticle);
       console.log('titleTags', article.titleTags);
+      let titleTagsJson = article.titleTags.replaceAll("\n", "");
+      let titleTags = JSON.parse(titleTagsJson);
+      console.log('titles', titleTags.titles);
+      setTitles(titleTags.titles);
+      setTitle(titleTags.titles[0]);
       message('article received', 'success');
 
       // console.log('got article part', articlePart);
@@ -162,11 +172,23 @@ function App() {
           {alertMessage}
       </Alert>
       <Box margin='.5rem 0'>
-        <Box display='flex' alignItems={'center'}>
-          <Text width='8rem' >Video&nbsp;URL:&nbsp; </Text>
-          <Input value={url} onChange={handleUrl}/>
-        </Box>
-      
+        { titles.length === 0 && <Box display='flex' alignItems={'center'}>
+            <Text width='8rem' >Video&nbsp;URL:&nbsp; </Text>
+            <Input value={url} onChange={handleUrl}/>
+          </Box>
+        }
+        { titles.length > 0 && <Select placeholder='Select option' value={titleIndex.toString()} 
+            onChange={e => { 
+              console.log('titles change', e.target.value) 
+              setTitleIndex(Number(e.target.value));
+              setTitle(titles[Number(e.target.value)])
+            }}>
+          {titles.map((t, i) => {
+            return <option key={`${t}-${i}`} value={`${i}`}>{t}</option>
+          })}
+          </Select>
+
+        }
         {speakers.map((speaker, index) => {
           return <InputSpeaker
             key={speaker + index}
