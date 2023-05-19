@@ -91,19 +91,7 @@ export const getTagId = async (hostname, username, password, tagName) => {
 export const createPost = async (hostname, username, password, title, content, tagNames = [], status = 'draft') => {
     let token, request, response;
 
-    request = {
-        url: `https://${hostname}/wp-json/wp/v2/posts`,
-        method: "POST",
-        withCredentials: false,
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        data: {
-            title, content, status
-        }
-    }
-
+  
     let tagIds = [];
 
     if (tagNames.length) {
@@ -111,18 +99,33 @@ export const createPost = async (hostname, username, password, title, content, t
             const tagId = await getTagId (hostname, username, password, tagNames[i]);
             tagIds.push(tagId);
         }
+        request.data.tags = tagIds.join(',');
     }
-
-    return;
 
     token = await getJWT(hostname, username, password);
 
+    request = {
+        url: `https://${hostname}/wp-json/wp/v2/posts`,
+        method: "POST",
+        withCredentials: false,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token.token}`
+        },
+        data: {
+            title, content, status
+        }
+    }
+
+    console.log(request);
+
     try {
         response = await axios(request);
+        console.log(response.data);
     } catch (err) {
         console.error(err);
         return false;
     }
 
-    return true;
+    return response.data.id;
 }

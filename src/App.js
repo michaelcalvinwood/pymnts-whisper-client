@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import { io } from 'socket.io-client';
 import './App.css';
-import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Select, Spinner, Text, Textarea } from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Link, Select, Spinner, Text, Textarea } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import InputSpeaker from './components/InputSpeaker';
 import axios from 'axios';
@@ -28,6 +28,7 @@ function App() {
   const [titles, setTitles] = useState([]);
   const [title, setTitle] = useState('');
   const [titleIndex, setTitleIndex] = useState(0);
+  const [articleId, setArticleId] = useState(0);
 
   const setTranscript = transcript => _setTranscript(transcript);
   const setArticle = article => _setArticle(article);
@@ -49,29 +50,30 @@ function App() {
     setAlertStatus(status);
   }
 
-  const createWordPressPost = async (title, content, username, password, tags = [] ) => {
-    let request = {
-      url: "https://delta.pymnts.com/wp-json/jwt-auth/v1/token",
-      method: "POST",
-      withCredentials: false,
-      headers: {
-          'Content-Type': 'application/json',
-          'Accept': "*/*"
-      },
-      data: {
-          username, password
-      }
-    }
+  // const createWordPressPost = async (title, content, username, password, tags = [] ) => {
+  //   let request = {
+  //     url: "https://delta.pymnts.com/wp-json/jwt-auth/v1/token",
+  //     method: "POST",
+  //     withCredentials: false,
+  //     headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': "*/*"
+  //     },
+  //     data: {
+  //         username, password
+  //     }
+  //   }
 
-    let response;
-    try {
-        response = await axios(request);
-    } catch (err) {
-        return console.error(err);
-    }
+  //   let response;
+  //   try {
+  //       response = await axios(request);
+  //   } catch (err) {
+  //       return console.error(err);
+  //   }
 
-    console.log(response.data);
-  }
+  //   console.log(response.data);
+  // }
+
 
   const handleUrl = e => {
 
@@ -85,8 +87,14 @@ function App() {
     window.socketConnection.emit('speakers', {rawTranscript: transcript, speakerList: speakers, entities});
   }
 
-  const makePost = () => {
-    console.log('create Post');
+  const makePost = async () => {
+    let result = await wp.createPost('delta.pymnts.com', username, password, title, article.engagingArticle);
+
+    if (result === false) message("Could not create post", "error");
+    else {
+      message("Post created.");
+      setArticleId(result);
+    }
   }
 
   const turnOffSpinner = () => setShowSpinner(false);
@@ -99,7 +107,7 @@ function App() {
 
     window.socketConnection.on('finalTranscript', transcript => {
       console.log('got transcript', transcript);
-      message('Final draft of the article is being created. You can copyedit the transcript now while waiting.', 'success');
+      message('Final draft is being created. You can copyedit the transcript now while waiting.', 'success');
       setTranscript(transcript);
       turnOffSpinner();
     })
@@ -172,10 +180,15 @@ function App() {
           {alertMessage}
       </Alert>
       <Box margin='.5rem 0'>
-        { titles.length === 0 && <Box display='flex' alignItems={'center'}>
+        { titles.length === 0 && !transcript && <Box display='flex' alignItems={'center'}>
             <Text width='8rem' >Video&nbsp;URL:&nbsp; </Text>
             <Input value={url} onChange={handleUrl}/>
           </Box>
+        }
+        {
+          articleId !== 0 && <Link href={`https://pymnts.com/?p=${articleId}`}>
+            <Button display='block' margin='auto' width="fit-content" padding=".25rem .5rem">View Article</Button>
+          </Link>
         }
         { titles.length > 0 && <Select placeholder='Select option' value={titleIndex.toString()} 
             onChange={e => { 
