@@ -32,7 +32,6 @@ export const getTagId = async (hostname, username, password, tagName) => {
     let request = {
         url: `https://${hostname}/wp-json/wp/v2/tags`,
         method: "GET",
-       
         params: {
            search: tagName
         }
@@ -49,11 +48,45 @@ export const getTagId = async (hostname, username, password, tagName) => {
         return false;
     }
 
-    console.log(response.data);
+    let tags = response.data;
+
+    /*
+     * If the tag exists then return the id
+     */
+    if (tags.length) return tags[0].id;
+
+    /*
+     * If the tag does not exist then create it
+     */
 
     const token  = await getJWT(hostname, username, password);
     if (token === false) return false;
 
+    request = {
+        url: `https://${hostname}/wp-json/wp/v2/tags`,
+        method: "POST",
+        withCredentials: false,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token.token}`
+        },
+        data: {
+            name: tagName,
+            slug: tagName.toLowerCase().replaceAll(' ', '-').trim()
+        }
+    }
+
+    console.log(request);
+
+    try {
+        response = await axios(request);
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+
+    console.log(response.data);
+  
 }
 
 export const createPost = async (hostname, username, password, title, content, tagNames = [], status = 'draft') => {

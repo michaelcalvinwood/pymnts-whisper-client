@@ -78,7 +78,7 @@ function App() {
   }
 
   const solidifySpeakers = e => {
-    window.socketConnection.emit('speakers', {rawTranscript, speakerList: speakers});
+    window.socketConnection.emit('speakers', {rawTranscript, speakerList: speakers, entities});
   }
 
   const turnOffSpinner = () => setShowSpinner(false);
@@ -94,12 +94,15 @@ function App() {
       setTranscript(transcript.replaceAll("\n", '<br>'));
     })
 
-    window.socketConnection.on('article', articlePart => {
-      console.log('got article part', articlePart);
-      let parts = articlePart.split("\n");
-      for (let i = 0; i < parts.length; ++i) if (parts[i]) parts[i] = `<p>${parts[i]}</p>`;
-      console.log(parts);
-      setArticle(article ? article + parts.join("\n") : parts.join("\n"));
+    window.socketConnection.on('article', article => {
+      console.log('article', article);
+      message('success', 'article received');
+
+      // console.log('got article part', articlePart);
+      // let parts = articlePart.split("\n");
+      // for (let i = 0; i < parts.length; ++i) if (parts[i]) parts[i] = `<p>${parts[i]}</p>`;
+      // console.log(parts);
+      // setArticle(article ? article + parts.join("\n") : parts.join("\n"));
     });
 
     window.socketConnection.on('speakers', (speakers) => {
@@ -130,13 +133,12 @@ function App() {
   }
 
   if (isLoggedIn) {
-    wp.getTagId('delta.pymnts.com', username, password, 'PYMNTS');
+    wp.getTagId('delta.pymnts.com', username, password, 'PYMNTS Testomatic');
   }
-
 
   useEffect(() => {
     //window.socketConnection.emit('url', 'the url')
-    createWordPressPost('test post', 'test content', window.env.WORDPRESS_USERNAME, window.env.WORDPRESS_PASSWORD)
+    //createWordPressPost('test post', 'test content', window.env.WORDPRESS_USERNAME, window.env.WORDPRESS_PASSWORD)
   }, []) 
 
   if (!isLoggedIn) {
@@ -173,13 +175,15 @@ function App() {
           />
         })
         }
-        {speakers.length !== 0 && <Textarea value={entities} onChange={e => setEntities(e.target.value)} placeholder={`List of names, products, etc. with unusual spelling.\nOne per line.`}  />}
+        {speakers.length !== 0 && <Textarea value={entities} onChange={e => setEntities(e.target.value)} placeholder={`Information to assist AI copyediting such as where people work, unusual spellings, etc.`}  />}
         {speakers.length !== 0 && <Button display='block' margin='auto' width='fit-content' padding='.25rem .5rem' onClick={solidifySpeakers}>Set Speakers</Button>}
       </Box>
       <Box>
         <div id='transcriptArticle'>
-          {transcript && <Heading size='sm'>{article ? "Article" : "Transcript"}</Heading> }
-          {transcript && <Text textAlign="left" dangerouslySetInnerHTML={{__html: article ? article : transcript}}></Text> }
+          {/* {transcript && <Heading size='sm'>{article ? "Article" : "Transcript"}</Heading> }
+          {transcript && <Text textAlign="left" dangerouslySetInnerHTML={{__html: article ? article : transcript}}></Text> } */}
+          {transcript && <Heading size='sm'>Transcript</Heading> }
+          {transcript && <Textarea textAlign="left" dangerouslySetInnerHTML={{__html: article ? article : transcript}}></Textarea> }
         </div>
       </Box>
       </Container>
