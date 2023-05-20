@@ -29,6 +29,7 @@ function App() {
   const [title, setTitle] = useState('');
   const [titleIndex, setTitleIndex] = useState(0);
   const [articleId, setArticleId] = useState(0);
+  const [tags, setTags] = useState([]);
 
   const setTranscript = transcript => _setTranscript(transcript);
   const setArticle = article => _setArticle(article);
@@ -107,7 +108,7 @@ function App() {
 
     window.socketConnection.on('finalTranscript', transcript => {
       console.log('got transcript', transcript);
-      message('Final draft is being created. You can copyedit the transcript now while waiting.', 'success');
+      message('Writing the article. You can copyedit the transcript now while waiting.', 'success');
       setTranscript(transcript);
       turnOffSpinner();
     })
@@ -116,11 +117,17 @@ function App() {
       setArticle(article);
       console.log('engaging artile', article.engagingArticle);
       console.log('titleTags', article.titleTags);
+      
       let titleTagsJson = article.titleTags.replaceAll("\n", "");
       let titleTags = JSON.parse(titleTagsJson);
+      
       console.log('titles', titleTags.titles);
       setTitles(titleTags.titles);
       setTitle(titleTags.titles[0]);
+
+      console.log('tags', titleTags.tags);
+      setTags(titleTags.tags);
+
       message('article received', 'success');
 
       // console.log('got article part', articlePart);
