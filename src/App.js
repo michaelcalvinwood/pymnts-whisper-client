@@ -89,7 +89,7 @@ function App() {
   }
 
   const makePost = async () => {
-    let result = await wp.createPost('delta.pymnts.com', username, password, title, article.engagingArticle);
+    let result = await wp.createPost('delta.pymnts.com', username, password, title, article.engagingArticle, tags);
 
     if (result === false) message("Could not create post", "error");
     else {
@@ -192,12 +192,8 @@ function App() {
             <Input value={url} onChange={handleUrl}/>
           </Box>
         }
-        {
-          articleId !== 0 && <Link href={`https://pymnts.com/?p=${articleId}`}>
-            <Button display='block' margin='auto' width="fit-content" padding=".25rem .5rem">View Article</Button>
-          </Link>
-        }
-        { titles.length > 0 && <Select placeholder='Select option' value={titleIndex.toString()} 
+      
+        {titles.length > 0 && <Select placeholder='Select option' value={titleIndex.toString()} 
             onChange={e => { 
               console.log('titles change', e.target.value) 
               setTitleIndex(Number(e.target.value));
@@ -208,6 +204,11 @@ function App() {
           })}
           </Select>
 
+        }
+        {
+          articleId !== 0 && <Link href={`https://pymnts.com/?p=${articleId}`} textDecoration={'none'}>
+            <Button display='block' margin='auto' width="fit-content" padding=".25rem .5rem">View Article</Button>
+          </Link>
         }
         {speakers.map((speaker, index) => {
           return <InputSpeaker

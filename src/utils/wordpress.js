@@ -32,7 +32,7 @@ export const getTagId = async (hostname, username, password, tagName) => {
         url: `https://${hostname}/wp-json/wp/v2/tags`,
         method: "GET",
         params: {
-           search: tagName
+           slug: tagName.toLowerCase().replaceAll(' ', '-').trim()
         }
     }
 
@@ -86,6 +86,7 @@ export const getTagId = async (hostname, username, password, tagName) => {
 
     console.log(response.data);
   
+    return Number(response.data.id);
 }
 
 export const createPost = async (hostname, username, password, title, content, tagNames = [], status = 'draft') => {
@@ -99,7 +100,7 @@ export const createPost = async (hostname, username, password, title, content, t
             const tagId = await getTagId (hostname, username, password, tagNames[i]);
             tagIds.push(tagId);
         }
-        request.data.tags = tagIds.join(',');
+        
     }
 
     token = await getJWT(hostname, username, password);
@@ -117,6 +118,8 @@ export const createPost = async (hostname, username, password, title, content, t
         }
     }
 
+    if (tagNames.length) request.data.tags = tagIds;
+
     console.log(request);
 
     try {
@@ -129,3 +132,4 @@ export const createPost = async (hostname, username, password, title, content, t
 
     return response.data.id;
 }
+
