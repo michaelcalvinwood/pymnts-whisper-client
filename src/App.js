@@ -32,6 +32,10 @@ function App() {
   const [articleId, setArticleId] = useState(0);
   const [tags, setTags] = useState([]);
 
+  const [showProgressBar, setShowProgessBar] = useState(false);
+
+  const progressBarRef = useRef();
+
   const setTranscript = transcript => _setTranscript(transcript);
   const setArticle = article => _setArticle(article);
   const setSpeakers = speakers => _setSpeakers([...speakers]);
@@ -54,6 +58,10 @@ function App() {
   }
 
   const onDrop = useCallback( async acceptedFiles => {
+    setShowProgessBar(true);
+    progressBarRef.current.value=20;
+    return;
+
     const uploadUrl = `https://node.pymnts.com:6400/uploadMp4?s=${encodeURIComponent(window.socketConnection.id)}`;
     
     setShowSpinner(true);
@@ -66,10 +74,11 @@ function App() {
         data: fd,
         headers: { 'Content-Type': 'multipart/form-data' }
     }
+    console.log(request);
+
     let response;
     try {
         response = await axios(request)
-    
     } catch (err) {
       message('Could not upload file.', 'error');  
       console.error(err.response);
@@ -115,7 +124,7 @@ function App() {
 
     window.socketConnection.on('finalTranscript', transcript => {
       console.log('got transcript', transcript);
-      message('Writing the article. You can copyedit the transcript now while waiting.', 'success');
+      message('Writing the article. This can take several minutes.', 'success');
       setTranscript(transcript);
       turnOffSpinner();
     })
@@ -135,7 +144,9 @@ function App() {
       console.log('tags', titleTags.tags);
       setTags(titleTags.tags);
 
-      message('article received', 'success');
+      setTranscript(article.engagingArticle);
+
+      message('Article finished. You can copy it now.', 'success');
 
       // console.log('got article part', articlePart);
       // let parts = articlePart.split("\n");
@@ -199,6 +210,10 @@ function App() {
             <Input value={url} onChange={handleUrl}/>
           </Box>
         }
+
+      { showProgressBar && <progress ref={progressBarRef} value={'0'} max='100' />
+
+      }
 
       <Box marginTop="8px" height="96px" padding='.5rem' border='1px solid var(--chakra-colors-gray-200)' borderRadius='8px' cursor='pointer'>
           <div {...getRootProps()}>
