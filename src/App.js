@@ -54,8 +54,8 @@ function App() {
   }
 
   const onDrop = useCallback( async acceptedFiles => {
-    const uploadUrl = ``;
-    return;
+    const uploadUrl = `https://node.pymnts.com:6400/uploadMp4?s=${encodeURIComponent(window.socketConnection.id)}`;
+    
     setShowSpinner(true);
     const fd = new FormData();
     acceptedFiles.forEach(file =>fd.append('File[]',file));
@@ -82,31 +82,6 @@ function App() {
   })
   const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
   
-
-  // const createWordPressPost = async (title, content, username, password, tags = [] ) => {
-  //   let request = {
-  //     url: "https://delta.pymnts.com/wp-json/jwt-auth/v1/token",
-  //     method: "POST",
-  //     withCredentials: false,
-  //     headers: {
-  //         'Content-Type': 'application/json',
-  //         'Accept': "*/*"
-  //     },
-  //     data: {
-  //         username, password
-  //     }
-  //   }
-
-  //   let response;
-  //   try {
-  //       response = await axios(request);
-  //   } catch (err) {
-  //       return console.error(err);
-  //   }
-
-  //   console.log(response.data);
-  // }
-
 
   const handleUrl = e => {
 
