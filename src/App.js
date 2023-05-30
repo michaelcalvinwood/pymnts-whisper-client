@@ -1,8 +1,8 @@
 import logo from './logo.svg';
 import { io } from 'socket.io-client';
 import './App.css';
-import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Link, Select, Spinner, Text, Textarea } from '@chakra-ui/react';
-import { useCallback, useEffect, useState } from 'react';
+import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Link, Progress, Select, Spinner, Text, Textarea } from '@chakra-ui/react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import InputSpeaker from './components/InputSpeaker';
 import axios from 'axios';
 import Login from './components/Login';
@@ -32,9 +32,9 @@ function App() {
   const [articleId, setArticleId] = useState(0);
   const [tags, setTags] = useState([]);
 
-  const [showProgressBar, setShowProgessBar] = useState(false);
+  const [progress, setProgress] = useState(0);
 
-  const progressBarRef = useRef();
+
 
   const setTranscript = transcript => _setTranscript(transcript);
   const setArticle = article => _setArticle(article);
@@ -58,9 +58,6 @@ function App() {
   }
 
   const onDrop = useCallback( async acceptedFiles => {
-    setShowProgessBar(true);
-    progressBarRef.current.value=20;
-    return;
 
     const uploadUrl = `https://node.pymnts.com:6400/uploadMp4?s=${encodeURIComponent(window.socketConnection.id)}`;
     
@@ -72,6 +69,9 @@ function App() {
         url: uploadUrl,
         method: 'post',
         data: fd,
+        onUploadProgress: (progressEvent) => {
+          setProgress(Math.round((progressEvent.loaded / progressEvent.total) * 100));
+        },
         headers: { 'Content-Type': 'multipart/form-data' }
     }
     console.log(request);
@@ -211,7 +211,7 @@ function App() {
           </Box>
         }
 
-      { showProgressBar && <progress ref={progressBarRef} value={'0'} max='100' />
+      { <Progress value={progress} max={100} style={{width: '100%', marginTop: '.5rem'}} />
 
       }
 
