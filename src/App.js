@@ -2,10 +2,11 @@ import logo from './logo.svg';
 import { io } from 'socket.io-client';
 import './App.css';
 import { Alert, AlertIcon, Box, Button, Container, Heading, Input, Link, Select, Spinner, Text, Textarea } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import InputSpeaker from './components/InputSpeaker';
 import axios from 'axios';
 import Login from './components/Login';
+import {useDropzone} from 'react-dropzone'
 import * as wp from './utils/wordpress';
 
 
@@ -36,6 +37,7 @@ function App() {
   const setSpeakers = speakers => _setSpeakers([...speakers]);
   const setArticleComplete = status => _setArticleComplete(status);
   const setRawTranscript = rt => _setRawTranscript(rt);
+
   
   const updateSpeaker = (num, name) => {
     
@@ -50,6 +52,36 @@ function App() {
     setAlertMessage(msg);
     setAlertStatus(status);
   }
+
+  const onDrop = useCallback( async acceptedFiles => {
+    const uploadUrl = ``;
+    return;
+    setShowSpinner(true);
+    const fd = new FormData();
+    acceptedFiles.forEach(file =>fd.append('File[]',file));
+
+    let request = {
+        url: uploadUrl,
+        method: 'post',
+        data: fd,
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }
+    let response;
+    try {
+        response = await axios(request)
+    
+    } catch (err) {
+      message('Could not upload file.', 'error');  
+      console.error(err.response);
+    }
+
+    setShowSpinner(false);
+    return;
+
+
+  })
+  const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
+  
 
   // const createWordPressPost = async (title, content, username, password, tags = [] ) => {
   //   let request = {
@@ -192,6 +224,15 @@ function App() {
             <Input value={url} onChange={handleUrl}/>
           </Box>
         }
+
+      <Box marginTop="8px" height="96px" padding='.5rem' border='1px solid var(--chakra-colors-gray-200)' borderRadius='8px' cursor='pointer'>
+          <div {...getRootProps()}>
+              <input {...getInputProps()} />
+              {
+                  <p style={{height:'6rem', width:'100%'}}>&nbsp;Drag 'n' drop some files here, or click to select files</p>
+              }
+          </div>
+      </Box>
       
         {titles.length > 0 && <Select placeholder='Select option' value={titleIndex.toString()} 
             onChange={e => { 
